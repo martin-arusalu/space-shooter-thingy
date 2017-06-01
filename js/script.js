@@ -133,11 +133,11 @@ function updateStats() {
 
 function createPlayer() {
   player = new createjs.Sprite(stuffSprites, "player");
-  player.width = 42
-  player.height = 30;
+  player.width = 63
+  player.height = 40.5;
   player.x = 10;
   player.y = stage.canvas.height / 2 - player.height / 2;
-  player.scaleX = player.scaleY = 0.04;
+  player.scaleX = player.scaleY = 0.06;
   stage.addChild(player);
 }
 
@@ -359,9 +359,9 @@ function spawnLife() {
 function spawnBoss() {
   if (game.level % 4 == 0 && !levelBoss) {
     let boss = new createjs.Sprite(stuffSprites, "boss");
-    boss.scaleX = boss.scaleY = 0.04;
-    boss.width = 81;
-    boss.height = 63;
+    boss.scaleX = boss.scaleY = 0.03;
+    boss.width = 60.75;
+    boss.height = 47.25;
     boss.x = stage.canvas.width - boss.width;
     boss.y = Math.random() * (stage.canvas.height - boss.height);
     boss.lives = game.level;
