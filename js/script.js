@@ -7,7 +7,7 @@ var stage,
   bullets = [],
   livesDisplay = [],
   stuffSprites,
-  explosionSS,
+  explosionSprite,
   levelBoss = false,
   loading,
   stats,
@@ -33,7 +33,11 @@ function preload() {
     queue = new createjs.LoadQueue(true);
     queue.installPlugin(createjs.Sound);
     queue.loadManifest([
-        {id:'stuffSprites', src:'sprites/stuff.json'}
+      { id: "interstellar", src: "sound/background.mp3" },
+      { id: 'stuffSprites', src: 'sprites/stuff.json' },
+      { id: 'explosionSprite', src: 'sprites/hh.json' },
+      { id: "shot", src: "sound/shot.mp3" },
+      { id: "explosion", src: "sound/explosion.mp3" }
     ]);
   
     loading = new createjs.Text("Loading", "20px pixelFont", "#fff");
@@ -50,14 +54,16 @@ function preload() {
 function progress(e) {
   let percent = Math.round(e.progress * 100);
   loading.text = "Loading: " + percent + "%";
-  stage.update()
+  stage.update();
 }
 
 function setup() {
     stage.removeChild(loading);
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener('tick', tickHappened);
+    createjs.Sound.play('interstellar');
     stuffSprites = new createjs.SpriteSheet(queue.getResult('stuffSprites'));
+    explosionSprite = new createjs.SpriteSheet(queue.getResult('explosionSprite'));
     showStartScreen();
 }
 
@@ -231,11 +237,28 @@ function lifeChanger(arr, add) {
   for (var i = arr.length - 1; i >= 0; i--) {
     if (hitTest(player, arr[i])) {
       if (add) game.lives++;
-      else game.lives--;
+      else {
+        game.lives--;
+        explode(arr[i]);
+      };
       stage.removeChild(arr[i]);
       arr.splice(i, 1);
     }
   }
+}
+
+function explode(o) {
+  let explosion = new createjs.Sprite(explosionSprite, 'explode');
+  explosion.x = o.x + o.width / 2;
+  explosion.y = o.y;
+  explosion.rotation = 90;
+  stage.addChild(explosion);
+  createjs.Tween.get(explosion)
+    .wait(200)
+    .to({ alpha: 0, visible: false }, 10)
+    .call(() => { 
+      stage.removeChild(explosion);
+    });
 }
 
 function doCollisionChecking() {
@@ -248,6 +271,8 @@ function doCollisionChecking() {
             if(bullets[b].dir == "right" && hitTest(enemies[e], bullets[b])){
                 stage.removeChild(enemies[e]);
                 stage.removeChild(bullets[b]);
+                createjs.Sound.play("explosion");
+                explode(enemies[e]);
                 enemies.splice(e,1);
                 bullets.splice(b,1);
                 game.enemiesKilled++;
@@ -260,6 +285,8 @@ function doCollisionChecking() {
             if (bosses[i].lives == 1) {
               stage.removeChild(bosses[i]);
               window.clearInterval(bosses[i].shooter);
+              createjs.Sound.play("explosion");
+              explode(bosses[i]);
               bosses.splice(i, 1);
               game.enemiesKilled++;
             } else {
@@ -274,6 +301,7 @@ function doCollisionChecking() {
         if (bullets[b] && bullets[b].dir == "left" && hitTest(player, bullets[b])) {
           game.lives--;
           stage.removeChild(bullets[b]);
+          createjs.Sound.play("explosion");
           bullets.splice(b, 1);
           break;
         }
@@ -317,7 +345,7 @@ function spawnEnemy() {
 }
 
 function spawnLife() {
-  if (Math.random() < 0.001 && game.lives < 5) {
+  if (Math.random() < 0.0003 && game.lives < 5) {
     let life = new createjs.Sprite(stuffSprites, "life");
     life.scaleX = life.scaleY = 0.04;
     life.width = life.height = 11;
@@ -332,8 +360,9 @@ function spawnBoss() {
   if (game.level % 4 == 0 && !levelBoss) {
     let boss = new createjs.Sprite(stuffSprites, "boss");
     boss.scaleX = boss.scaleY = 0.04;
-    boss.x = stage.canvas.width - 60;
-    boss.width = boss.height = 50;
+    boss.width = 81;
+    boss.height = 63;
+    boss.x = stage.canvas.width - boss.width;
     boss.y = Math.random() * (stage.canvas.height - boss.height);
     boss.lives = game.level;
     bosses.push(boss);
@@ -356,6 +385,7 @@ function hitTest(rect1, rect2) {
 }
 
 function shoot(shooter, left) {
+    createjs.Sound.play("shot");
     let bullet = new createjs.Shape();
     bullet.graphics.beginFill("#FFF").drawCircle(0, 0, 4);
     bullet.x = left ? shooter.x : shooter.x + shooter.width;
@@ -368,6 +398,7 @@ function shoot(shooter, left) {
 
 // KEYS
 function onKeyDown(e) {
+  if (game.started) {
     switch (e.keyCode) {
         case 38:
             keys.up = true;
@@ -384,9 +415,11 @@ function onKeyDown(e) {
         case 77:
           createjs.Sound.muted = !createjs.Sound.muted;
     }
+  }
 }
 
 function onKeyUp(e) {
+  if (game.started) {
     switch (e.keyCode) {
         case 32:
             shoot(player, false);
@@ -404,6 +437,7 @@ function onKeyUp(e) {
             keys.right = false;
             break;
     }
+  }
 }
 
 // EVENTS

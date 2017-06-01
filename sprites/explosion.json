@@ -1,7 +1,7 @@
 {
 
 "images": [
-    "explosion.png"
+    "sprites/explosion.png"
 ],
 
 "frames": [
@@ -24,7 +24,7 @@
 ],
 
 "animations": {
-    "no": { "frames": [0, 1, 2, 5, 7, 8, 12, 10, 3, 13, 11, 4, 14, 6, 15, 9] }
+    "explode": { "frames": [0, 1, 2, 5, 7, 8, 12, 10, 3, 13, 11, 4, 14, 6, 15, 9] }
 },
 
 "texturepacker": [
