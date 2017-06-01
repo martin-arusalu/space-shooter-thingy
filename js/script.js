@@ -33,7 +33,7 @@ function preload() {
     queue = new createjs.LoadQueue(true);
     queue.installPlugin(createjs.Sound);
     queue.loadManifest([
-      { id: "interstellar", src: "sound/background.mp3" },
+      { id: "interstellar", src: "sound/background.min.mp3" },
       { id: 'stuffSprites', src: 'sprites/stuff.json' },
       { id: 'explosionSprite', src: 'sprites/hh.json' },
       { id: "shot", src: "sound/shot.mp3" },
@@ -249,6 +249,7 @@ function lifeChanger(arr, add) {
 
 function explode(o) {
   let explosion = new createjs.Sprite(explosionSprite, 'explode');
+  createjs.Sound.play("explosion", {volume: 0.3});
   explosion.x = o.x + o.width / 2;
   explosion.y = o.y;
   explosion.rotation = 90;
@@ -271,7 +272,6 @@ function doCollisionChecking() {
             if(bullets[b].dir == "right" && hitTest(enemies[e], bullets[b])){
                 stage.removeChild(enemies[e]);
                 stage.removeChild(bullets[b]);
-                createjs.Sound.play("explosion");
                 explode(enemies[e]);
                 enemies.splice(e,1);
                 bullets.splice(b,1);
@@ -285,7 +285,6 @@ function doCollisionChecking() {
             if (bosses[i].lives == 1) {
               stage.removeChild(bosses[i]);
               window.clearInterval(bosses[i].shooter);
-              createjs.Sound.play("explosion");
               explode(bosses[i]);
               bosses.splice(i, 1);
               game.enemiesKilled++;
@@ -301,7 +300,6 @@ function doCollisionChecking() {
         if (bullets[b] && bullets[b].dir == "left" && hitTest(player, bullets[b])) {
           game.lives--;
           stage.removeChild(bullets[b]);
-          createjs.Sound.play("explosion");
           bullets.splice(b, 1);
           break;
         }
@@ -385,7 +383,7 @@ function hitTest(rect1, rect2) {
 }
 
 function shoot(shooter, left) {
-    createjs.Sound.play("shot");
+    createjs.Sound.play("shot", {volume: 0.1});
     let bullet = new createjs.Shape();
     bullet.graphics.beginFill("#FFF").drawCircle(0, 0, 4);
     bullet.x = left ? shooter.x : shooter.x + shooter.width;
