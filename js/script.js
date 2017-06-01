@@ -44,18 +44,18 @@ function setup() {
 
 function showStartScreen() {
   stage.removeAllChildren();
-  let welcome = new createjs.Text("Space Shooter Thingy!", "30px Helvetica", "#fff");
+  let welcome = new createjs.Text("Space Shooter Thingy!", "25px pixelFont", "#fff");
   welcome.y = 150;
-  let highScore = new createjs.Text("Your high score is: " + game.highScore, "18px Helvetica", "#fff");
+  let highScore = new createjs.Text("Your high score is: " + game.highScore, "13px pixelFont", "#fff");
   highScore.y = 200;
-  let instructions = new createjs.Text("Press arrow keys to move. Press spacebar to shoot enemies. Collect lives", "13px Helvetica", "#fff");
+  let instructions = new createjs.Text("Press arrow keys to move. Press spacebar to shoot enemies. Collect lives", "8px pixelFont", "#fff");
   instructions.y = 230;
-  let startBtnTxt = new createjs.Text("New game", "20px Helvetica", "#111");
+  let startBtnTxt = new createjs.Text("New game", "15px pixelFont", "#111");
   startBtnTxt.y = 280;
   let startBtnShape = new createjs.Shape();
-  startBtnShape.graphics.beginFill('#fff').drawRect(0, 0, 120, 40);
+  startBtnShape.graphics.beginFill('#fff').drawRect(0, 0, 140, 40);
   startBtnShape.y = 260;
-  startBtnShape.x = stage.canvas.width / 2 - 60;
+  startBtnShape.x = stage.canvas.width / 2 - 70;
   startBtnShape.addEventListener('click', startGame);
     
   welcome.textBaseline = highScore.textBaseline = instructions.textBaseline = startBtnTxt.textBaseline = "middle";
@@ -75,11 +75,11 @@ function startGame() {
 }
 
 function createStats() {
-  stats.score = new createjs.Text("Score: " + game.score, "18px Helvetica", "#111");
+  stats.score = new createjs.Text("Score: " + game.score, "13px pixelFont", "#111");
   stats.score.y = 30;
-  stats.lives = new createjs.Text("Lives: " + game.lives, "18px Helvetica", "#111");
+  stats.lives = new createjs.Text("Lives: " + game.lives, "13px pixelFont", "#111");
   stats.lives.y = 60;
-  stats.level = new createjs.Text("Level: " + game.level, "18px Helvetica", "#111");
+  stats.level = new createjs.Text("Level: " + game.level, "13px pixelFont", "#111");
   stats.level.y = 90;
     
   stats.score.x = stats.lives.x = stats.level.x = 10;
@@ -127,6 +127,17 @@ function reset() {
 function nextLevel() {
   game.level++;
   levelBoss = false;
+  let levelTxt = new createjs.Text("Level " + game.level, "25px pixelFont", "#111");
+  levelTxt.y = stage.canvas.height / 2;
+  levelTxt.x = stage.canvas.width / 2;
+  levelTxt.textBaseline = "middle";
+  levelTxt.textAlign = "center";
+  stage.addChild(levelTxt);
+  createjs.Tween
+    .get(levelTxt)
+    .wait(500)
+    .to({ alpha: 0, visible: false }, 1000)
+    .call(() => stage.removeChild(levelTxt));
 }
 
 function tickHappened(e) {
@@ -181,22 +192,20 @@ function movePlayer() {
   if (keys.right == true && player.x < stage.canvas.width - player.width) player.x += 3;
 }
 
-function doCollisionChecking() {
-    for(var i = enemies.length - 1; i >= 0; i--){
-        if(hitTest(player, enemies[i])){
-            game.lives--;
-            stage.removeChild(enemies[i]);
-            enemies.splice(i,1);
-        }
+function lifeChanger(arr, add) {
+  for (var i = arr.length - 1; i >= 0; i--) {
+    if (hitTest(player, arr[i])) {
+      if (add) game.lives++;
+      else game.lives--;
+      stage.removeChild(arr[i]);
+      arr.splice(i, 1);
     }
+  }
+}
 
-    for(var i = lifeTokens.length - 1; i >= 0; i--){
-        if(hitTest(player, lifeTokens[i])){
-            game.lives++;
-            stage.removeChild(lifeTokens[i]);
-            lifeTokens.splice(i,1);
-        }
-    }
+function doCollisionChecking() {
+  lifeChanger(lifeTokens, true);
+  lifeChanger(enemies, false);
 
     //bullets vs enemies
     for(var b = bullets.length - 1; b >= 0; b--){
@@ -248,16 +257,16 @@ function endGame() {
   for (boss of bosses) window.clearInterval(boss.shooter);
   if (game.score > game.highScore) game.highScore = game.score;
   game.started = false;
-  let dead = new createjs.Text("You are dead!", "30px Helvetica", "#fff");
+  let dead = new createjs.Text("You are dead!", "25px pixelFont", "#fff");
   dead.y = 150;
-  let score = new createjs.Text("Score was: " + game.score, "18px Helvetica", "#fff");
+  let score = new createjs.Text("Score was: " + game.score, "13px pixelFont", "#fff");
   score.y = 180;
-  let homeBtnTxt = new createjs.Text("Home", "20px Helvetica", "#111");
+  let homeBtnTxt = new createjs.Text("Home", "15px pixelFont", "#111");
   homeBtnTxt.y = 250;
   let homeBtnShape = new createjs.Shape();
-  homeBtnShape.graphics.beginFill('#fff').drawRect(0, 0, 120, 40);
+  homeBtnShape.graphics.beginFill('#fff').drawRect(0, 0, 140, 40);
   homeBtnShape.y = 230;
-  homeBtnShape.x = stage.canvas.width / 2 - 60;
+  homeBtnShape.x = stage.canvas.width / 2 - 70;
   homeBtnShape.addEventListener('click', showStartScreen);
     
   dead.x = score.x = homeBtnTxt.x = stage.canvas.width / 2;
