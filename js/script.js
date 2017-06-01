@@ -5,9 +5,12 @@ var stage,
   lifeTokens = [],
   bosses = [],
   bullets = [],
-  enemiesSS,
+  livesDisplay = [],
+  stuffSprites,
   explosionSS,
   levelBoss = false,
+  loading,
+  stats,
   keys = {
     up: false,
     down: false,
@@ -23,38 +26,54 @@ var stage,
     score: 0,
     highScore: 0,
     started: false
-  },
-  stats = {};
+  }
 
 function preload() {
     stage = new createjs.Stage("myCanvas");
     queue = new createjs.LoadQueue(true);
+    queue.installPlugin(createjs.Sound);
     queue.loadManifest([
-        {id:'enemiesSS', src:'js/slime.json'}
+        {id:'stuffSprites', src:'sprites/stuff.json'}
     ]);
+  
+    loading = new createjs.Text("Loading", "20px pixelFont", "#fff");
+    loading.textBaseline = "middle";
+    loading.textAlign = "center";
+    loading.x = stage.canvas.width / 2;
+    loading.y = stage.canvas.height / 2;
+    stage.addChild(loading)
+  
+    queue.addEventListener('progress', progress);
     queue.addEventListener('complete', setup);
 }
 
+function progress(e) {
+  let percent = Math.round(e.progress * 100);
+  loading.text = "Loading: " + percent + "%";
+  stage.update()
+}
+
 function setup() {
+    stage.removeChild(loading);
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener('tick', tickHappened);
-    enemiesSS = new createjs.SpriteSheet(queue.getResult('enemiesSS'));
+    stuffSprites = new createjs.SpriteSheet(queue.getResult('stuffSprites'));
     showStartScreen();
 }
 
 function showStartScreen() {
   stage.removeAllChildren();
-  let welcome = new createjs.Text("Space Shooter Thingy!", "25px pixelFont", "#fff");
+  let welcome = new createjs.Text("Some Space Shooter Thingy!", "20px pixelFont", "#fff");
   welcome.y = 150;
   let highScore = new createjs.Text("Your high score is: " + game.highScore, "13px pixelFont", "#fff");
   highScore.y = 200;
-  let instructions = new createjs.Text("Press arrow keys to move. Press spacebar to shoot enemies. Collect lives", "8px pixelFont", "#fff");
+  let instructions = new createjs.Text("Press arrow keys to move.\nPress spacebar to shoot enemies.\nCollect lives\nPress M to mute / unmute sounds", "10px pixelFont", "#fff");
   instructions.y = 230;
   let startBtnTxt = new createjs.Text("New game", "15px pixelFont", "#111");
-  startBtnTxt.y = 280;
+  startBtnTxt.y = 350;
   let startBtnShape = new createjs.Shape();
   startBtnShape.graphics.beginFill('#fff').drawRect(0, 0, 140, 40);
-  startBtnShape.y = 260;
+  startBtnShape.y = 330;
   startBtnShape.x = stage.canvas.width / 2 - 70;
   startBtnShape.addEventListener('click', startGame);
     
@@ -75,39 +94,55 @@ function startGame() {
 }
 
 function createStats() {
-  stats.score = new createjs.Text("Score: " + game.score, "13px pixelFont", "#111");
-  stats.score.y = 30;
-  stats.lives = new createjs.Text("Lives: " + game.lives, "13px pixelFont", "#111");
-  stats.lives.y = 60;
-  stats.level = new createjs.Text("Level: " + game.level, "13px pixelFont", "#111");
-  stats.level.y = 90;
-    
-  stats.score.x = stats.lives.x = stats.level.x = 10;
-
-  stage.addChild(stats.score, stats.lives, stats.level);
+  let text = "Score: " + game.score + " Level: " + game.level;
+  stats = new createjs.Text(text, "13px pixelFont", "#fff");
+  stats.y = 30;
+  stats.x = 10;
+  for (let i = 0; i < game.lives; i++) {
+    let life = new createjs.Sprite(stuffSprites, "life");
+    life.x = 10 + i * 17;
+    life.y = 70;
+    life.scaleX = life.scaleY = 0.05;
+    life.width = life.height = 11;
+    livesDisplay.push(life);
+    stage.addChild(life);
+  }
+  stage.addChild(stats);
 }
 
 function updateStats() {
-  stats.score.text = "Score: " + game.score;
-  stats.lives.text = "Lives: " + game.lives;
-  stats.level.text = "Level: " + game.level;
+  for (life of livesDisplay) stage.removeChild(life);
+  livesDisplay = [];
+  for (let i = 0; i < game.lives; i++) {
+    let life = new createjs.Sprite(stuffSprites, "life");
+    life.x = 10 + i * 17;
+    life.y = 70;
+    life.scaleX = life.scaleY = 0.05;
+    life.width = life.height = 11;
+    livesDisplay.push(life);
+    stage.addChild(life);
+  }
+  stats.text = "Score: " + game.score + " Level: " + game.level;
 }
 
 function createPlayer() {
-  player = new createjs.Shape();
-  player.width=player.height = 50;
-  player.graphics.beginFill("red").drawRect(0, 0, player.width, player.height);
+  player = new createjs.Sprite(stuffSprites, "player");
+  player.width = 42
+  player.height = 30;
   player.x = 10;
   player.y = stage.canvas.height / 2 - player.height / 2;
+  player.scaleX = player.scaleY = 0.04;
   stage.addChild(player);
 }
 
 function createEnemy() {
-  var enemy = new createjs.Sprite(enemiesSS, "left");
-  enemy.width = 62;
-  enemy.height = 56;
+  var enemy = new createjs.Sprite(stuffSprites, "enemy");
+  enemy.width = 57;
+  enemy.height = 33;
   enemy.y = Math.floor(Math.random() * 550);
   enemy.x = 600;
+  enemy.scaleX = 0.04;
+  enemy.scaleY = 0.04;
   stage.addChild(enemy);
   enemies.push(enemy);
 }
@@ -127,7 +162,7 @@ function reset() {
 function nextLevel() {
   game.level++;
   levelBoss = false;
-  let levelTxt = new createjs.Text("Level " + game.level, "25px pixelFont", "#111");
+  let levelTxt = new createjs.Text("Level " + game.level, "25px pixelFont", "#fff");
   levelTxt.y = stage.canvas.height / 2;
   levelTxt.x = stage.canvas.width / 2;
   levelTxt.textBaseline = "middle";
@@ -282,10 +317,10 @@ function spawnEnemy() {
 }
 
 function spawnLife() {
-  if (Math.random() < 0.001) {
-    let life = new createjs.Shape();
-    life.width = life.height = 10;
-    life.graphics.beginFill("#0f0").drawRect(0, 0, life.width, life.height);
+  if (Math.random() < 0.001 && game.lives < 5) {
+    let life = new createjs.Sprite(stuffSprites, "life");
+    life.scaleX = life.scaleY = 0.04;
+    life.width = life.height = 11;
     life.x = 600;
     life.y = Math.random() * 600 - life.height;
     stage.addChild(life);
@@ -295,12 +330,11 @@ function spawnLife() {
 
 function spawnBoss() {
   if (game.level % 4 == 0 && !levelBoss) {
-    let boss = new createjs.Shape();
-    boss.graphics.beginFill("yellow");
-    boss.graphics.drawRect(0, 0, 50, 50);
+    let boss = new createjs.Sprite(stuffSprites, "boss");
+    boss.scaleX = boss.scaleY = 0.04;
     boss.x = stage.canvas.width - 60;
     boss.width = boss.height = 50;
-    boss.y = Math.random(stage.canvas.height - boss.height);
+    boss.y = Math.random() * (stage.canvas.height - boss.height);
     boss.lives = game.level;
     bosses.push(boss);
     stage.addChild(boss);
@@ -347,6 +381,8 @@ function onKeyDown(e) {
         case 39:
             keys.right = true;
             break;
+        case 77:
+          createjs.Sound.muted = !createjs.Sound.muted;
     }
 }
 

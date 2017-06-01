@@ -1,0 +1,26 @@
+{
+
+"images": [
+    "sprites/stuff.png"
+],
+
+"frames": [
+    [1, 1, 2025, 1575, 0, 0, 0],
+    [2028, 1, 1425, 825, 0, 0, 0],
+    [2028, 828, 1050, 675, 0, 0, 0],
+    [3080, 828, 300, 280, 0, 0, 0]
+],
+
+"animations": {
+    "boss": { "frames": [0] },
+    "enemy": { "frames": [1] },
+    "player": { "frames": [2] },
+    "life": { "frames": [3] }
+},
+
+"texturepacker": [
+        "SmartUpdateHash: $TexturePacker:SmartUpdate:41b59c7c41e27c52e25c0e8f7f14d89a:41034bc691995ce5946a2f823f2fe2a8:08f8c823cd16016d345e88bba4e952e7$",
+        "Created with TexturePacker (https://www.codeandweb.com/texturepacker) for EaselJS"
+]
+
+}
