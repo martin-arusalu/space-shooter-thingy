@@ -410,10 +410,9 @@ function onKeyDown(e) {
         case 39:
             keys.right = true;
             break;
-        case 77:
-          createjs.Sound.muted = !createjs.Sound.muted;
     }
   }
+  if (e.keyCode == 77)  createjs.Sound.muted = !createjs.Sound.muted;
 }
 
 function onKeyUp(e) {
